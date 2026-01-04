@@ -87,4 +87,73 @@ router.get('/summary/today', async (req, res) => {
   }
 });
 
+// GET /whoop/workout/latest - 最近训练
+router.get('/workout/latest', async (req, res) => {
+  try {
+    const workout = await whoopService.getLatestWorkout();
+    if (!workout) {
+      return res.status(404).json({
+        error: 'NO_DATA',
+        message: 'No workout data found'
+      });
+    }
+    res.json(workout);
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+// GET /whoop/workout/history - 训练历史
+router.get('/workout/history', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const workouts = await whoopService.getWorkoutHistory(limit);
+    res.json({ records: workouts, count: workouts.length });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+// GET /whoop/body - 身体数据
+router.get('/body', async (req, res) => {
+  try {
+    const body = await whoopService.getBodyMeasurement();
+    res.json(body);
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+// GET /whoop/sleep/history - 睡眠历史
+router.get('/sleep/history', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 7;
+    const sleeps = await whoopService.getSleepHistory(limit);
+    res.json({ records: sleeps, count: sleeps.length });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+// GET /whoop/recovery/history - 恢复历史
+router.get('/recovery/history', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 7;
+    const recoveries = await whoopService.getRecoveryHistory(limit);
+    res.json({ records: recoveries, count: recoveries.length });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+// GET /whoop/report/weekly - 周报（趋势分析）
+router.get('/report/weekly', async (req, res) => {
+  try {
+    const report = await whoopService.getWeeklyReport();
+    res.json(report);
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
 module.exports = router;

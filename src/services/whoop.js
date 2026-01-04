@@ -203,6 +203,109 @@ async function getTodaySummary() {
   };
 }
 
+// 获取最近训练数据
+async function getLatestWorkout() {
+  const data = await getWithAuth('/activity/workout?limit=1');
+  if (!data.records || data.records.length === 0) {
+    return null;
+  }
+  return data.records[0];
+}
+
+// 获取训练历史（最近 7 天）
+async function getWorkoutHistory(limit = 10) {
+  const data = await getWithAuth(`/activity/workout?limit=${limit}`);
+  return data.records || [];
+}
+
+// 获取身体数据
+async function getBodyMeasurement() {
+  return await getWithAuth('/user/measurement/body');
+}
+
+// 获取睡眠历史
+async function getSleepHistory(limit = 7) {
+  const data = await getWithAuth(`/activity/sleep?limit=${limit}`);
+  return data.records || [];
+}
+
+// 获取恢复历史（通过多个 cycles）
+async function getRecoveryHistory(limit = 7) {
+  const cycleData = await getWithAuth(`/cycle?limit=${limit}`);
+  if (!cycleData.records || cycleData.records.length === 0) {
+    return [];
+  }
+
+  const recoveries = [];
+  for (const cycle of cycleData.records) {
+    try {
+      const recovery = await getWithAuth(`/cycle/${cycle.id}/recovery`);
+      recoveries.push({
+        cycle_id: cycle.id,
+        date: cycle.start,
+        ...recovery
+      });
+    } catch (err) {
+      // 跳过没有 recovery 的 cycle
+    }
+  }
+  return recoveries;
+}
+
+// 获取周期历史
+async function getCycleHistory(limit = 7) {
+  const data = await getWithAuth(`/cycle?limit=${limit}`);
+  return data.records || [];
+}
+
+// 获取完整健康报告（过去 7 天趋势）
+async function getWeeklyReport() {
+  const [sleepHistory, cycleHistory] = await Promise.all([
+    getSleepHistory(7).catch(() => []),
+    getCycleHistory(7).catch(() => [])
+  ]);
+
+  // 计算睡眠趋势
+  const sleepScores = sleepHistory
+    .filter(s => s.score?.sleep_performance_percentage)
+    .map(s => s.score.sleep_performance_percentage);
+
+  const avgSleepScore = sleepScores.length > 0
+    ? Math.round(sleepScores.reduce((a, b) => a + b, 0) / sleepScores.length)
+    : null;
+
+  // 计算平均 strain
+  const strains = cycleHistory
+    .filter(c => c.score?.strain)
+    .map(c => c.score.strain);
+
+  const avgStrain = strains.length > 0
+    ? (strains.reduce((a, b) => a + b, 0) / strains.length).toFixed(1)
+    : null;
+
+  return {
+    period: '7 days',
+    sleep: {
+      average_score: avgSleepScore,
+      total_records: sleepHistory.length,
+      recent: sleepHistory.slice(0, 3).map(s => ({
+        date: s.start,
+        score: s.score?.sleep_performance_percentage,
+        duration_hours: s.score?.stage_summary?.total_in_bed_time_milli
+          ? (s.score.stage_summary.total_in_bed_time_milli / 3600000).toFixed(1)
+          : null
+      }))
+    },
+    strain: {
+      average: avgStrain,
+      recent: cycleHistory.slice(0, 3).map(c => ({
+        date: c.start,
+        strain: c.score?.strain?.toFixed(1)
+      }))
+    }
+  };
+}
+
 module.exports = {
   refreshAccessToken,
   getWithAuth,
@@ -210,5 +313,12 @@ module.exports = {
   getLatestRecovery,
   getLatestCycle,
   getUserProfile,
-  getTodaySummary
+  getTodaySummary,
+  getLatestWorkout,
+  getWorkoutHistory,
+  getBodyMeasurement,
+  getSleepHistory,
+  getRecoveryHistory,
+  getCycleHistory,
+  getWeeklyReport
 };

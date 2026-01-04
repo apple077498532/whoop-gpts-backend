@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: WHOOP Health Coach API
+  description: Complete API for WHOOP health data
+  version: 2.0.0
+servers:
+  - url: https://whoop-gpts-backend.onrender.com
+paths:
+  /whoop/summary/today:
+    get:
+      operationId: getTodaySummary
+      summary: Get today's health summary with sleep, recovery and training hints
+      responses:
+        '200':
+          description: Success
+  /whoop/sleep/latest:
+    get:
+      operationId: getLatestSleep
+      summary: Get latest sleep data
+      responses:
+        '200':
+          description: Success
+  /whoop/sleep/history:
+    get:
+      operationId: getSleepHistory
+      summary: Get sleep history for the past days
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        '200':
+          description: Success
+  /whoop/recovery/latest:
+    get:
+      operationId: getLatestRecovery
+      summary: Get latest recovery data
+      responses:
+        '200':
+          description: Success
+  /whoop/recovery/history:
+    get:
+      operationId: getRecoveryHistory
+      summary: Get recovery history for the past days
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        '200':
+          description: Success
+  /whoop/workout/latest:
+    get:
+      operationId: getLatestWorkout
+      summary: Get latest workout data
+      responses:
+        '200':
+          description: Success
+  /whoop/workout/history:
+    get:
+      operationId: getWorkoutHistory
+      summary: Get workout history
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Success
+  /whoop/body:
+    get:
+      operationId: getBodyMeasurement
+      summary: Get body measurements (height, weight, max heart rate)
+      responses:
+        '200':
+          description: Success
+  /whoop/profile:
+    get:
+      operationId: getUserProfile
+      summary: Get user profile information
+      responses:
+        '200':
+          description: Success
+  /whoop/report/weekly:
+    get:
+      operationId: getWeeklyReport
+      summary: Get weekly health report with trends and averages
+      responses:
+        '200':
+          description: Success
