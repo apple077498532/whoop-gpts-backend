@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const TOKEN_FILE = path.join(__dirname, '../../data/token.json');
+// 生产环境使用 Render Disk（/data），本地使用项目目录
+const DATA_DIR = process.env.NODE_ENV === 'production' ? '/data' : path.join(__dirname, '../../data');
+const TOKEN_FILE = path.join(DATA_DIR, 'token.json');
 
 // 预留 5 分钟 buffer，提前刷新
 const EXPIRY_BUFFER_MS = 5 * 60 * 1000;
