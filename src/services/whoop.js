@@ -1,7 +1,8 @@
 const axios = require('axios');
 const tokenService = require('./token');
 
-const WHOOP_API_BASE = 'https://api.prod.whoop.com/developer/v1';
+// 使用 v2 API（v1 已于 2025年10月停用）
+const WHOOP_API_BASE = 'https://api.prod.whoop.com/developer/v2';
 const WHOOP_TOKEN_URL = 'https://api.prod.whoop.com/oauth/oauth2/token';
 
 async function refreshAccessToken() {
