@@ -78,13 +78,27 @@ async function getLatestSleep() {
   return data.records[0];
 }
 
-// 获取最近恢复数据
+// 获取最近恢复数据（需要先获取 cycle，再获取 recovery）
 async function getLatestRecovery() {
-  const data = await getWithAuth('/recovery?limit=1');
-  if (!data.records || data.records.length === 0) {
+  // 先获取最近的 cycle
+  const cycleData = await getWithAuth('/cycle?limit=1');
+  if (!cycleData.records || cycleData.records.length === 0) {
     return null;
   }
-  return data.records[0];
+
+  const cycle = cycleData.records[0];
+
+  // 通过 cycle ID 获取 recovery
+  try {
+    const recovery = await getWithAuth(`/cycle/${cycle.id}/recovery`);
+    return recovery;
+  } catch (err) {
+    // 如果没有 recovery 数据，返回 null
+    if (err.response?.status === 404) {
+      return null;
+    }
+    throw err;
+  }
 }
 
 // 获取最近周期数据
